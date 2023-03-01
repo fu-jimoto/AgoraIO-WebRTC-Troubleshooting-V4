@@ -337,6 +337,8 @@ import * as i18n from './utils/i18n'
 
 const log = console.log.bind(console)
 
+let destructAll_proc = false;
+
 // If need mobile phone terminal debugging
 // let vConsole = new VConsole()
 // log("testVConsole")
@@ -579,13 +581,16 @@ export default {
         resolve();
 
         this.recvClient.on("user-unpublished", (user) => {
-          clearInterval(this.detectInterval);
-          this.bitrateData = {};
-          this.packetsData = {};
-          this.testSuites["4"].notError = false;
-          this.testSuites["4"].extra = "Disconnected";
-          this.destructAll();
-          this.currentTestSuite = "5";
+
+          if (!destructAll_proc){
+            clearInterval(this.detectInterval);
+            this.bitrateData = {};
+            this.packetsData = {};
+            this.testSuites["4"].notError = false;
+            this.testSuites["4"].extra = "Disconnected";
+            this.destructAll();
+            this.currentTestSuite = "5";
+          }
         });
       });
     },
@@ -618,6 +623,7 @@ export default {
         for (var trackName in this.sendStream) {
           var track = this.sendStream[trackName];
           if(track) {
+            destructAll_proc=true;
             this.sendClient.unpublish(this.sendStream[trackName]);
             track.stop();
             track.close();
@@ -846,6 +852,7 @@ export default {
     },
 
     async handleConnectivityCheck() {
+      destructAll_proc=false;
       this.currentTestSuite = "4";
       let testSuite = this.testSuites["4"];
       // init client and stream
